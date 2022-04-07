@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/bnmHome"
+        android:title="Home"
+        android:icon="@drawable/ic_baseline_home_black"/>
+
+    <item
+        android:id="@+id/bnmSearch"
+        android:title="Pesquisa"
+        android:icon="@drawable/ic_baseline_search_black"/>
+
+    <item
+        android:id="@+id/bnmPost"
+        android:title="Postagem"
+        android:icon="@drawable/ic_baseline_add_box_black"/>
+
+    <item
+        android:id="@+id/bnmProfile"
+        android:title="Perfil"
+        android:icon="@drawable/ic_baseline_person_black"/>
+
+</menu>
