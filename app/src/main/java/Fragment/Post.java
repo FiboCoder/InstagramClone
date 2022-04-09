@@ -49,7 +49,7 @@ public class Post extends Fragment {
             public void onClick(View v) {
 
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                if(intent.resolveActivity(getContext().getPackageManager()) == null){
+                if(intent.resolveActivity(getContext().getPackageManager()) != null){
 
                     startActivityForResult(intent, GALLERY_SELECTION);
                 }
@@ -61,7 +61,7 @@ public class Post extends Fragment {
             public void onClick(View v) {
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if(intent.resolveActivity(getContext().getPackageManager()) == null){
+                if(intent.resolveActivity(getContext().getPackageManager()) != null){
 
                     startActivityForResult(intent, CAMERA_SELECTION);
                 }

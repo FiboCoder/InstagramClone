@@ -54,7 +54,7 @@ public class Feed extends RecyclerView.Adapter<Feed.MyViewHolder> {
         Model.Feed feed = feedList.get(position);
         User loggedUser = FirebaseUser.getUserData();
 
-        if(feed.getUserImage() != null){
+        if(feed.getUserImage() != null && !feed.getUserImage().isEmpty()){
 
             Uri urlProfile = Uri.parse(feed.getUserImage());
             Glide.with(context).load(urlProfile).into(holder.civProfile);

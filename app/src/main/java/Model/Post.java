@@ -39,7 +39,7 @@ public class Post implements Serializable {
         //Feed reference
         for(DataSnapshot ds : followersSnapshot.getChildren()){
 
-            String followersId = followersSnapshot.getKey();
+            String followersId = ds.getKey();
 
             //Config object
             HashMap<String, Object> followerData = new HashMap<>();
