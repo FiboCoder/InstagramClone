@@ -23,3 +23,4 @@
 -keep public class com.google.android.material.bottomnavigation.BottomNavigationView { *; }
 -keep public class com.google.android.material.bottomnavigation.BottomNavigationMenuView { *; }
 -keep public class com.google.android.material.bottomnavigation.BottomNavigationItemView { *; }
+-keep class androidx.appcompat.widget.** { *; }

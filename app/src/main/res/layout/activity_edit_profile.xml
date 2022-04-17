@@ -26,7 +26,7 @@
             android:id="@+id/tvChangeProfileImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Alterar Foto"
+            android:text="Alterar foto do perfil"
             android:textColor="@color/darkBlue"
             android:textStyle="bold"/>
 
@@ -49,7 +49,7 @@
             android:drawablePadding="6dp"/>
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btSaveChanges"
+            android:id="@+id/btnSaveChanges"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Salvar Alterações"/>

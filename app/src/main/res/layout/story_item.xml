@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="75dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="6dp"
+    android:layout_marginEnd="6dp"
+    android:orientation="vertical"
+    android:gravity="center|bottom">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/civStories"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:civ_border_width="2dp"
+        app:civ_border_color="#F44336"
+        android:src="@drawable/image_not_found"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/civStoriesSeen"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:visibility="gone"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tvUsernameStories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Username"
+        android:maxLines="1"/>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

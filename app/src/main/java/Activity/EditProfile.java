@@ -10,6 +10,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.Toolbar;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -39,46 +40,78 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class EditProfile extends AppCompatActivity {
 
+    //Components
     private CircleImageView civProfile;
     private AppCompatTextView tvChangeProfileImage;
     private AppCompatEditText etName, etEmail;
-    private AppCompatButton btSaveChanges;
+    private AppCompatButton btnSaveChanges;
 
-    private User loggedUser;
-
-    private static final int GALLERY_SELECTION = 200;
-
+    //Firebase
     private StorageReference storage;
 
+    //Utils
+    private Bitmap image;
+    private String userID;
+    private User loggedUser;
+    private static final int GALLERY_SELECTION = 200;
     private String[] permissions = new String[]{
 
             Manifest.permission.READ_EXTERNAL_STORAGE
 
     };
 
-    private String userID;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
-        loggedUser = Helper.FirebaseUser.getUserData();
-        storage = FirebaseConfig.getStorage();
+        initAndConfigComponents();
 
-        userID = Helper.FirebaseUser.getUserID();
+        Permission.validatePermissions(permissions, this, 1);
 
+    }
+
+    private void initAndConfigComponents(){
+
+        //Toolbar
         Toolbar toolbar = findViewById(R.id.tbMain);
         toolbar.setTitle("Editar Perfil");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_close_black);
 
-        initializeComponents();
+        //Components
+        civProfile = findViewById(R.id.civEditProfile);
+        etName = findViewById(R.id.etNameEditProfile);
+        etEmail = findViewById(R.id.etEmailEditProfile);
+        etEmail.setFocusable(false);
 
-        Permission.validatePermissions(permissions, this, 1);
+        tvChangeProfileImage = findViewById(R.id.tvChangeProfileImage);
+        tvChangeProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                if(intent.resolveActivity(getPackageManager()) != null){
+
+                    startActivityForResult(intent, GALLERY_SELECTION);
+
+                }
+            }
+        });
+
+        btnSaveChanges = findViewById(R.id.btnSaveChanges);
+        btnSaveChanges.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                saveChanges();
+            }
+        });
+
+        //Firebase
+        loggedUser = Helper.FirebaseUser.getUserData();
+        storage = FirebaseConfig.getStorage();
         FirebaseUser profile = Helper.FirebaseUser.getCurrentUser();
         etName.setText(profile.getDisplayName());
         etEmail.setText(profile.getEmail());
@@ -94,33 +127,9 @@ public class EditProfile extends AppCompatActivity {
             civProfile.setImageResource(R.drawable.avatar);
         }
 
-        btSaveChanges.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        //Utils
+        userID = Helper.FirebaseUser.getUserID();
 
-                String updatedName = etName.getText().toString();
-
-                Helper.FirebaseUser.updateUserName(updatedName);
-
-                loggedUser.setName(updatedName);
-                loggedUser.setNameLowerCase(updatedName);
-                loggedUser.update();
-
-            }
-        });
-
-        tvChangeProfileImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                if(intent.resolveActivity(getPackageManager()) == null){
-
-                    startActivityForResult(intent, GALLERY_SELECTION);
-
-                }
-            }
-        });
     }
 
     @Override
@@ -129,7 +138,7 @@ public class EditProfile extends AppCompatActivity {
 
         if(resultCode == RESULT_OK){
 
-            Bitmap image = null;
+            image = null;
 
             try{
 
@@ -145,43 +154,6 @@ public class EditProfile extends AppCompatActivity {
 
                     civProfile.setImageBitmap(image);
 
-                    //Recover image data to Firebase
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    image.compress(Bitmap.CompressFormat.JPEG, 70,baos);
-                    byte[] imageData = baos.toByteArray();
-
-                    //Save image in Firebase
-                    StorageReference imageRef = storage
-                            .child("Images")
-                            .child("Profile")
-                            .child(userID + ".jpeg");
-
-                    UploadTask uploadTask = imageRef.putBytes(imageData);
-                    uploadTask.addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                            Toast.makeText(EditProfile.this, "Erro ao fazer upload da imagem!", Toast.LENGTH_SHORT).show();
-
-                        }
-                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                            imageRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Uri> task) {
-
-                                    Uri url = task.getResult();
-                                    updateProfileImage(url);
-
-                                    Toast.makeText(EditProfile.this, "Sucesso ao fazer upload da imagem!", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-
-                        }
-                    });
-
                 }
 
             }catch (Exception e){
@@ -191,6 +163,73 @@ public class EditProfile extends AppCompatActivity {
         }
     }
 
+    private void saveChanges(){
+
+        ProgressDialog pd = new ProgressDialog(this);
+        pd.setMessage("Salvando alterações");
+        pd.show();
+
+        //Update name
+        String updatedName = etName.getText().toString();
+
+        //Update on Firebase User
+        Helper.FirebaseUser.updateUserName(updatedName);
+
+        //Update on Firebase Database
+        loggedUser.setName(updatedName);
+        loggedUser.setNameLowerCase(updatedName);
+        loggedUser.updateUserAndFollowersNode();
+
+        if(image != null){
+
+            //Recover image data to Firebase
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 70,baos);
+            byte[] imageData = baos.toByteArray();
+
+            //Save image in Firebase
+            StorageReference imageRef = storage
+                    .child("Images")
+                    .child("Profile")
+                    .child(userID + ".jpeg");
+
+            UploadTask uploadTask = imageRef.putBytes(imageData);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+
+                    pd.dismiss();
+                    Toast.makeText(EditProfile.this, "Erro ao fazer upload da imagem!", Toast.LENGTH_SHORT).show();
+
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                    imageRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+
+                            Uri url = task.getResult();
+                            updateProfileImage(url);
+
+                            pd.dismiss();
+                            Toast.makeText(EditProfile.this, "Alterações realizadas com sucesso.", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    });
+
+                }
+            });
+        }else{
+
+            pd.dismiss();
+            Toast.makeText(EditProfile.this, "Alterações realizadas com sucesso.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+    }
+
     private void updateProfileImage(Uri url){
 
         //Update image in Firebase profile
@@ -198,25 +237,7 @@ public class EditProfile extends AppCompatActivity {
 
         //Update image in Real Time Database
         loggedUser.setUrlImage(url.toString());
-        loggedUser.update();
-
-        Toast.makeText(EditProfile.this, "Sua foto foi atualizada!", Toast.LENGTH_SHORT).show();
-
-
-    }
-
-    private void initializeComponents(){
-
-        civProfile = findViewById(R.id.civEditProfile);
-
-        tvChangeProfileImage = findViewById(R.id.tvChangeProfileImage);
-
-        etName = findViewById(R.id.etNameEditProfile);
-        etEmail = findViewById(R.id.etEmailEditProfile);
-
-        btSaveChanges = findViewById(R.id.btSaveChanges);
-
-        etEmail.setFocusable(false);
+        loggedUser.updateUserAndFollowersNode();
 
     }
 

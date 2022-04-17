@@ -7,6 +7,7 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -40,7 +41,7 @@ public class Filters extends AppCompatActivity {
     private AppCompatImageView ivSelectedImage;
     private Bitmap image;
     private AppCompatEditText etDescription;
-    private AlertDialog dialog;
+    private ProgressDialog pd;
 
     //Database
     private DatabaseReference reference;
@@ -88,7 +89,6 @@ public class Filters extends AppCompatActivity {
 
         //Database references config
         reference = FirebaseConfig.getReference();
-        usersRef = reference.child("Users");
 
         //User ID config
         loggedUserId = FirebaseUser.getUserID();
@@ -106,6 +106,7 @@ public class Filters extends AppCompatActivity {
 
         openDialogLoading("Carregando dados, aguarde...");
 
+        usersRef = reference.child("Users");
         loggedUserRef = usersRef.child(loggedUserId);
 
         valueEventListenerLoggedUser = loggedUserRef.addValueEventListener(new ValueEventListener() {
@@ -121,7 +122,7 @@ public class Filters extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         followersSnapshot = snapshot;
-                        dialog.cancel();
+                        pd.dismiss();
                     }
 
                     @Override
@@ -141,13 +142,10 @@ public class Filters extends AppCompatActivity {
 
     private void openDialogLoading(String title){
 
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle(title);
-        alert.setCancelable(false);
-        alert.setView(R.layout.loading);
+        pd = new ProgressDialog(this);
+        pd.setMessage(title);
+        pd.show();
 
-        dialog = alert.create();
-        dialog.show();
 
     }
 
@@ -195,10 +193,8 @@ public class Filters extends AppCompatActivity {
                         //Save post
                         if (post.save(followersSnapshot)) {
 
-
-
                             Toast.makeText(Filters.this, "Sucesso ao salvar postagem!", Toast.LENGTH_SHORT).show();
-                            dialog.cancel();
+                            pd.dismiss();
                             finish();
 
                         }

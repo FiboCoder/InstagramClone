@@ -37,6 +37,7 @@ public class Post implements Serializable {
         object.put("/Posts" + idCombination, this);
 
         //Feed reference
+
         for(DataSnapshot ds : followersSnapshot.getChildren()){
 
             String followersId = ds.getKey();

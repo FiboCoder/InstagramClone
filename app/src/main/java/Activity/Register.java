@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
+import com.google.firebase.database.DatabaseReference;
 
 import Helper.FirebaseConfig;
 import Helper.FirebaseUser;
@@ -105,10 +106,10 @@ public class Register extends AppCompatActivity {
                         String userID = task.getResult().getUser().getUid();
                         user.setId(userID);
                         user.save();
+                        user.saveFollowers();
 
                         //Save data on Firebase Profile
                         FirebaseUser.updateUserName(user.getName());
-
 
                         Toast.makeText(Register.this, "Sucesso ao cadastrar usuário", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));

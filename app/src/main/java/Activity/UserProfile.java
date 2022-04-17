@@ -50,6 +50,7 @@ public class UserProfile extends AppCompatActivity {
     private DatabaseReference userProfileRef;
     private DatabaseReference loggedUserRef;
     private DatabaseReference followersRef;
+    private DatabaseReference followingRef;
     private DatabaseReference postsUserRef;
     private ValueEventListener valueEventListenerUserProfile;
 
@@ -75,6 +76,7 @@ public class UserProfile extends AppCompatActivity {
         reference = FirebaseConfig.getReference();
         usersRef = reference.child("Users");
         followersRef = reference.child("Followers");
+        followingRef = reference.child("Following");
 
         //User config
         loggedUserId = FirebaseUser.getUserID();
@@ -269,14 +271,14 @@ public class UserProfile extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    saveFollower(loggedUser, selectedUser);
+                    saveFollowerAndFollowing(loggedUser, selectedUser);
                 }
             });
         }
 
     }
 
-    private void saveFollower(User lUser, User pUser){
+    private void saveFollowerAndFollowing(User lUser, User pUser){
 
         //Config user data to save a follower
         HashMap<String, Object> loggedUserData = new HashMap<>();
@@ -288,6 +290,17 @@ public class UserProfile extends AppCompatActivity {
                 .child(lUser.getId());
 
         followerRef.setValue(loggedUserData);
+
+        //Config user data to save a following
+        HashMap<String, Object> selectedUserData = new HashMap<>();
+        selectedUserData.put("name", pUser.getName());
+        selectedUserData.put("urlImage", pUser.getUrlImage());
+
+        DatabaseReference followingRef2 = followingRef
+                .child(lUser.getId())
+                .child(pUser.getId());
+
+        followingRef2.setValue(selectedUserData);
 
         btActProfile.setText("Seguindo");
         btActProfile.setOnClickListener(null);
@@ -317,6 +330,7 @@ public class UserProfile extends AppCompatActivity {
 
 
     }
+
 
     private void recoverProfileData(){
 

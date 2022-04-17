@@ -16,7 +16,7 @@ public class User implements Serializable {
     private String nameLowerCase;
     private String email;
     private String pass;
-    private String urlImage;
+    private String urlImage = "";
     private int followers = 0;
     private int following = 0;
     private int posts = 0;
@@ -27,13 +27,27 @@ public class User implements Serializable {
     public void save(){
 
         DatabaseReference reference = FirebaseConfig.getReference();
-
         DatabaseReference userRef = reference.child("Users");
                 userRef.child(getId())
                 .setValue(this);
     }
 
-    public void update(){
+    public void saveFollowers(){
+
+        DatabaseReference reference = FirebaseConfig.getReference();
+        DatabaseReference followersRef = reference
+                .child("Followers")
+                .child(getId())
+                .child(getId());
+        followersRef.setValue(getName());
+
+        HashMap<String, Object> loggedUserData = new HashMap<>();
+        loggedUserData.put("name", getName());
+        loggedUserData.put("urlImage", getUrlImage());
+        followersRef.setValue(loggedUserData);
+    }
+
+    public void updateUserAndFollowersNode(){
 
         DatabaseReference reference = FirebaseConfig.getReference();
 
@@ -43,6 +57,16 @@ public class User implements Serializable {
         object.put("/Users/" + getId() + "/nameLowerCase", getNameLowerCase());
 
         reference.updateChildren(object);
+
+        DatabaseReference followerRef = reference
+                .child("Followers")
+                .child(getId())
+                .child(getId());
+
+        HashMap<String, Object> userObject = new HashMap<>();
+        userObject.put("urlImage", getUrlImage());
+
+        followerRef.updateChildren(userObject);
 
     }
 
@@ -54,23 +78,6 @@ public class User implements Serializable {
         HashMap<String, Object> data = new HashMap<>();
         data.put("posts", getPosts());
         userRef.updateChildren(data);
-
-    }
-
-    public Map<String, Object> convertToMap(){
-
-        HashMap<String, Object> userMap = new HashMap<>();
-
-        userMap.put("id", getId());
-        userMap.put("name", getName());
-        userMap.put("nameLowerCase", getName().toLowerCase());
-        userMap.put("email", getEmail());
-        userMap.put("urlImage", getUrlImage());
-        userMap.put("followers", getFollowers());
-        userMap.put("following", getFollowing());
-        userMap.put("posts", getPosts());
-
-        return userMap;
 
     }
 

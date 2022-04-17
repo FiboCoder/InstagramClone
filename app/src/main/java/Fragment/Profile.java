@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
@@ -69,6 +70,7 @@ public class Profile extends Fragment {
 
         initAndConfigComponents(view);
         initializeImageLoader();
+        recoverProfileImage();
         loadPostsImages();
 
         return view;
@@ -196,6 +198,20 @@ public class Profile extends Fragment {
         recoverLoggedUserData();
         recoverProfileImage();
         super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        recoverLoggedUserData();
+        recoverProfileImage();
+        super.onResume();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        recoverLoggedUserData();
+        recoverProfileImage();
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
